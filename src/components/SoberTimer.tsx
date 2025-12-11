@@ -16,6 +16,8 @@ interface SoberTimerData {
   dailyCost: number;
   motivation?: string;
   pledgeDate?: string;
+  walletAddress?: string;
+  authStrategy?: string;
 }
 
 interface MiniAppContext {
@@ -48,6 +50,8 @@ export default function SoberTimer() {
     dailyCost: 8,
     motivation: "",
     pledgeDate: "",
+    walletAddress: "",
+    authStrategy: "",
   });
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -124,6 +128,8 @@ export default function SoberTimer() {
               dailyCost: result.data.dailyCost || 8,
               motivation: result.data.motivation || "",
               pledgeDate: result.data.pledgeDate || "",
+              walletAddress: result.data.walletAddress || "",
+              authStrategy: result.data.authStrategy || "",
             };
             setFormData(dbData);
             // Also save to localStorage as backup
@@ -267,9 +273,24 @@ export default function SoberTimer() {
     setIsEditingCost(false);
   };
 
-  const handlePledgeConfirmed = async (motivation: string) => {
+  const handlePledgeConfirmed = async (
+    motivation: string,
+    walletAddress?: string
+  ) => {
     const today = new Date().toISOString().split("T")[0];
-    const updatedData = { ...formData, motivation, pledgeDate: today };
+
+    // Get auth strategy from localStorage if wallet address is provided
+    const authStrategy = walletAddress
+      ? localStorage.getItem("authStrategy") || ""
+      : formData.authStrategy;
+
+    const updatedData = {
+      ...formData,
+      motivation,
+      pledgeDate: today,
+      walletAddress: walletAddress || formData.walletAddress,
+      authStrategy: authStrategy || formData.authStrategy,
+    };
     setFormData(updatedData);
     localStorage.setItem("soberTimerData", JSON.stringify(updatedData));
 

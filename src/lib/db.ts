@@ -9,6 +9,8 @@ export interface UserSobrietyData {
   dailyCost: number;
   motivation?: string;
   pledgeDate?: string;
+  walletAddress?: string;
+  authStrategy?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -26,6 +28,8 @@ export async function initializeDatabase() {
         daily_cost DECIMAL(10, 2) DEFAULT 8.00,
         motivation TEXT,
         pledge_date VARCHAR(10),
+        wallet_address VARCHAR(42),
+        auth_strategy VARCHAR(50),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
@@ -43,7 +47,7 @@ export async function getUserSobrietyData(
 ): Promise<UserSobrietyData | null> {
   try {
     const result = await sql`
-      SELECT 
+      SELECT
         fid,
         start_date as "startDate",
         start_time as "startTime",
@@ -52,9 +56,11 @@ export async function getUserSobrietyData(
         daily_cost as "dailyCost",
         motivation,
         pledge_date as "pledgeDate",
+        wallet_address as "walletAddress",
+        auth_strategy as "authStrategy",
         created_at as "createdAt",
         updated_at as "updatedAt"
-      FROM user_sobriety 
+      FROM user_sobriety
       WHERE fid = ${fid}
     `;
 
@@ -76,20 +82,22 @@ export async function saveUserSobrietyData(
   try {
     await sql`
       INSERT INTO user_sobriety (
-        fid, start_date, start_time, addiction, custom_addiction, 
-        daily_cost, motivation, pledge_date, updated_at
+        fid, start_date, start_time, addiction, custom_addiction,
+        daily_cost, motivation, pledge_date, wallet_address, auth_strategy, updated_at
       ) VALUES (
-        ${data.fid}, 
-        ${data.startDate}, 
-        ${data.startTime || null}, 
-        ${data.addiction}, 
+        ${data.fid},
+        ${data.startDate},
+        ${data.startTime || null},
+        ${data.addiction},
         ${data.customAddiction || null},
         ${data.dailyCost || 8},
         ${data.motivation || null},
         ${data.pledgeDate || null},
+        ${data.walletAddress || null},
+        ${data.authStrategy || null},
         CURRENT_TIMESTAMP
       )
-      ON CONFLICT (fid) 
+      ON CONFLICT (fid)
       DO UPDATE SET
         start_date = ${data.startDate},
         start_time = ${data.startTime || null},
@@ -98,6 +106,12 @@ export async function saveUserSobrietyData(
         daily_cost = ${data.dailyCost || 8},
         motivation = ${data.motivation || null},
         pledge_date = ${data.pledgeDate || null},
+        wallet_address = COALESCE(${
+          data.walletAddress || null
+        }, user_sobriety.wallet_address),
+        auth_strategy = COALESCE(${
+          data.authStrategy || null
+        }, user_sobriety.auth_strategy),
         updated_at = CURRENT_TIMESTAMP
     `;
 

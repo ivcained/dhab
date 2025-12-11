@@ -70,6 +70,8 @@ export async function POST(request: NextRequest) {
       dailyCost,
       motivation,
       pledgeDate,
+      walletAddress,
+      authStrategy,
     } = body;
 
     if (!fid) {
@@ -92,6 +94,8 @@ export async function POST(request: NextRequest) {
       dailyCost: dailyCost || 8,
       motivation: motivation || "",
       pledgeDate: pledgeDate || "",
+      walletAddress: walletAddress || "",
+      authStrategy: authStrategy || "",
     });
 
     if (!result.success) {

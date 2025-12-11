@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
+import WalletLogin from "~/components/wallet/WalletLogin";
 
 interface PledgeViewProps {
-  onPledgeConfirmed: (motivation: string) => void;
+  onPledgeConfirmed: (motivation: string, walletAddress?: string) => void;
   onClose: () => void;
 }
 
@@ -76,12 +77,31 @@ const getDayName = () => {
   return days[new Date().getDay()];
 };
 
+type PledgeStep = "login" | "pledge";
+
 export default function PledgeView({
   onPledgeConfirmed,
   onClose,
 }: PledgeViewProps) {
+  const [step, setStep] = useState<PledgeStep>("login");
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const [authStrategy, setAuthStrategy] = useState<string | null>(null);
   const [selectedMotivations, setSelectedMotivations] = useState<string[]>([]);
   const [pledgeAccepted, setPledgeAccepted] = useState(false);
+
+  const handleWalletConnected = (address: string, strategy: string) => {
+    setWalletAddress(address);
+    setAuthStrategy(strategy);
+    // Save to localStorage for persistence
+    localStorage.setItem("walletAddress", address);
+    localStorage.setItem("authStrategy", strategy);
+    // Move to pledge step
+    setStep("pledge");
+  };
+
+  const handleSkipLogin = () => {
+    setStep("pledge");
+  };
 
   const toggleMotivation = (id: string) => {
     setSelectedMotivations((prev) =>
@@ -95,23 +115,108 @@ export default function PledgeView({
         .map((id) => motivationOptions.find((m) => m.id === id)?.text)
         .filter(Boolean)
         .join(", ");
-      onPledgeConfirmed(motivationTexts);
+      onPledgeConfirmed(motivationTexts, walletAddress || undefined);
     }
   };
 
+  // Login Step
+  if (step === "login") {
+    return (
+      <div className="min-h-screen bg-white">
+        <div className="w-full max-w-lg mx-auto">
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 py-4 border-b border-slate-100">
+            <button onClick={onClose} className="text-slate-400 text-2xl">
+              ✕
+            </button>
+            <h1 className="text-sm font-semibold text-slate-500 tracking-wide uppercase">
+              Welcome
+            </h1>
+            <div className="w-8" />
+          </div>
+
+          {/* Logo/Branding */}
+          <div className="px-6 py-8 text-center">
+            <div className="w-20 h-20 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <span className="text-4xl">🌟</span>
+            </div>
+            <h1 className="text-2xl font-bold text-slate-800 mb-2">
+              Sober Timer
+            </h1>
+            <p className="text-slate-500">
+              Track your journey to a healthier life
+            </p>
+          </div>
+
+          {/* Wallet Login */}
+          <div className="px-6 pb-8">
+            <WalletLogin
+              onConnected={handleWalletConnected}
+              onSkip={handleSkipLogin}
+            />
+          </div>
+
+          {/* Features Preview */}
+          <div className="px-6 pb-8">
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div className="p-3">
+                <div className="text-2xl mb-1">⏱️</div>
+                <p className="text-xs text-slate-500">Track Time</p>
+              </div>
+              <div className="p-3">
+                <div className="text-2xl mb-1">💰</div>
+                <p className="text-xs text-slate-500">Save Money</p>
+              </div>
+              <div className="p-3">
+                <div className="text-2xl mb-1">👥</div>
+                <p className="text-xs text-slate-500">Community</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Pledge Step
   return (
     <div className="min-h-screen bg-white">
       <div className="w-full max-w-lg mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-4 border-b border-slate-100">
-          <button onClick={onClose} className="text-slate-400 text-2xl">
-            ✕
+          <button
+            onClick={() => setStep("login")}
+            className="text-slate-400 text-2xl"
+          >
+            ←
           </button>
           <h1 className="text-sm font-semibold text-slate-500 tracking-wide uppercase">
             Pledge for {getDayName()}
           </h1>
-          <div className="w-8" />
+          <div className="w-8">
+            {walletAddress && (
+              <div
+                className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center"
+                title={`Connected: ${walletAddress}`}
+              >
+                <span className="text-green-600 text-xs">✓</span>
+              </div>
+            )}
+          </div>
         </div>
+
+        {/* Connected Wallet Badge */}
+        {walletAddress && (
+          <div className="px-4 py-2 bg-slate-50 border-b border-slate-100">
+            <div className="flex items-center justify-center gap-2 text-sm text-slate-600">
+              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+              <span>Connected via {authStrategy}</span>
+              <span className="font-mono text-xs text-slate-400">
+                {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
+              </span>
+            </div>
+          </div>
+        )}
 
         <div className="px-4 py-6">
           {/* Pledge Card */}
@@ -137,8 +242,8 @@ export default function PledgeView({
 
           {/* Pagination dots */}
           <div className="flex justify-center gap-2 mb-6">
-            <div className="w-2 h-2 rounded-full bg-cyan-500" />
             <div className="w-2 h-2 rounded-full bg-slate-300" />
+            <div className="w-2 h-2 rounded-full bg-cyan-500" />
             <div className="w-2 h-2 rounded-full bg-slate-300" />
           </div>
 
