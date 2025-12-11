@@ -67,6 +67,7 @@ export default function SoberTimer() {
   const [tempCost, setTempCost] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [contextReady, setContextReady] = useState(false);
 
   // Get user FID from Farcaster context
   const userFid = useMemo(() => {
@@ -108,8 +109,27 @@ export default function SoberTimer() {
     [userFid]
   );
 
+  // Set context ready after a timeout or when frameContext is available
+  useEffect(() => {
+    // If frameContext is already available, mark as ready
+    if (frameContext !== null) {
+      setContextReady(true);
+      return;
+    }
+
+    // Set a timeout to proceed even if frameContext is not available
+    // This handles the case when running outside of Farcaster MiniApp
+    const timeout = setTimeout(() => {
+      setContextReady(true);
+    }, 1000); // Wait max 1 second for context
+
+    return () => clearTimeout(timeout);
+  }, [frameContext]);
+
   // Load data from database or localStorage
   useEffect(() => {
+    if (!contextReady) return;
+
     const loadData = async () => {
       setIsLoading(true);
 
@@ -172,11 +192,8 @@ export default function SoberTimer() {
       setIsLoading(false);
     };
 
-    // Wait for frame context to be available
-    if (frameContext !== null) {
-      loadData();
-    }
-  }, [userFid, frameContext, saveToDatabase]);
+    loadData();
+  }, [userFid, contextReady, saveToDatabase]);
 
   useEffect(() => {
     if (view !== "timer" || !formData.startDate) return;
