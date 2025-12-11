@@ -252,6 +252,23 @@ export default function SoberTimer() {
     setView("timer");
   };
 
+  // Save form data whenever it changes (for persistence when navigating back)
+  const updateFormData = async (updates: Partial<SoberTimerData>) => {
+    const newData = { ...formData, ...updates };
+    setFormData(newData);
+
+    // Save to localStorage immediately
+    localStorage.setItem("soberTimerData", JSON.stringify(newData));
+
+    // If we have enough data, save to database
+    if (
+      userFid &&
+      (newData.startDate || newData.addiction || newData.motivation)
+    ) {
+      await saveToDatabase(newData);
+    }
+  };
+
   const handleReset = async () => {
     // Delete from database if user has FID
     if (userFid) {
@@ -269,6 +286,10 @@ export default function SoberTimer() {
       addiction: "",
       customAddiction: "",
       dailyCost: 8,
+      motivation: "",
+      pledgeDate: "",
+      walletAddress: "",
+      authStrategy: "",
     });
     setView("setup");
     setShowCustomInput(false);
@@ -378,7 +399,7 @@ export default function SoberTimer() {
   return (
     <SetupView
       formData={formData}
-      setFormData={setFormData}
+      setFormData={updateFormData}
       expandedCategory={expandedCategory}
       setExpandedCategory={setExpandedCategory}
       searchQuery={searchQuery}
@@ -386,6 +407,7 @@ export default function SoberTimer() {
       showCustomInput={showCustomInput}
       setShowCustomInput={setShowCustomInput}
       handleStartTimer={handleStartTimer}
+      onBack={() => setView("pledge")}
     />
   );
 }

@@ -1,13 +1,22 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { ConnectEmbed, useActiveAccount } from "thirdweb/react";
 import { inAppWallet, type Wallet } from "thirdweb/wallets";
 import { client } from "~/lib/thirdweb";
 
+interface FarcasterUser {
+  fid: number;
+  username?: string;
+  displayName?: string;
+  pfpUrl?: string;
+}
+
 interface WalletLoginProps {
   onConnected: (address: string, strategy: string) => void;
   onSkip?: () => void;
+  farcasterUser?: FarcasterUser | null;
+  isInMiniApp?: boolean;
 }
 
 // Configure wallets with supported auth strategies
@@ -19,21 +28,68 @@ const wallets = [
   }),
 ];
 
-export default function WalletLogin({ onConnected, onSkip }: WalletLoginProps) {
+export default function WalletLogin({
+  onConnected,
+  onSkip,
+  farcasterUser,
+  isInMiniApp,
+}: WalletLoginProps) {
   const [isConnected, setIsConnected] = useState(false);
+  const [autoLoginAttempted, setAutoLoginAttempted] = useState(false);
   const activeAccount = useActiveAccount();
+
+  // Memoized connect handler
+  const handleFarcasterAutoLogin = useCallback(
+    (fid: number, username?: string) => {
+      // Use FID as a pseudo-address for Farcaster users
+      const farcasterAddress = `farcaster:${fid}`;
+      const strategy = `farcaster${username ? `:${username}` : ""}`;
+
+      // Save to localStorage
+      localStorage.setItem("walletAddress", farcasterAddress);
+      localStorage.setItem("authStrategy", strategy);
+      localStorage.setItem("farcasterFid", fid.toString());
+      if (username) {
+        localStorage.setItem("farcasterUsername", username);
+      }
+
+      setIsConnected(true);
+      onConnected(farcasterAddress, strategy);
+    },
+    [onConnected]
+  );
+
+  // Auto-login for Farcaster MiniApp users
+  useEffect(() => {
+    if (
+      isInMiniApp &&
+      farcasterUser &&
+      farcasterUser.fid &&
+      !autoLoginAttempted &&
+      !isConnected
+    ) {
+      setAutoLoginAttempted(true);
+      handleFarcasterAutoLogin(farcasterUser.fid, farcasterUser.username);
+    }
+  }, [
+    isInMiniApp,
+    farcasterUser,
+    autoLoginAttempted,
+    isConnected,
+    handleFarcasterAutoLogin,
+  ]);
 
   // Check for existing connection in localStorage
   useEffect(() => {
     const savedAddress = localStorage.getItem("walletAddress");
     const savedStrategy = localStorage.getItem("authStrategy");
-    if (savedAddress && savedStrategy) {
+    if (savedAddress && savedStrategy && !isConnected) {
       setIsConnected(true);
       onConnected(savedAddress, savedStrategy);
     }
-  }, [onConnected]);
+  }, [onConnected, isConnected]);
 
-  // Handle when activeAccount changes (user connects)
+  // Handle when activeAccount changes (user connects via thirdweb)
   useEffect(() => {
     if (activeAccount && !isConnected) {
       const address = activeAccount.address;

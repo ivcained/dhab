@@ -3,22 +3,21 @@
 import React, { useMemo } from "react";
 import { addictionCategories } from "~/lib/addictions";
 
+interface FormData {
+  startDate: string;
+  startTime: string;
+  addiction: string;
+  customAddiction: string;
+  dailyCost?: number;
+  motivation?: string;
+  pledgeDate?: string;
+  walletAddress?: string;
+  authStrategy?: string;
+}
+
 interface SetupViewProps {
-  formData: {
-    startDate: string;
-    startTime: string;
-    addiction: string;
-    customAddiction: string;
-  };
-  setFormData: React.Dispatch<
-    React.SetStateAction<{
-      startDate: string;
-      startTime: string;
-      addiction: string;
-      customAddiction: string;
-      dailyCost: number;
-    }>
-  >;
+  formData: FormData;
+  setFormData: (updates: Partial<FormData>) => void;
   expandedCategory: string | null;
   setExpandedCategory: (val: string | null) => void;
   searchQuery: string;
@@ -26,6 +25,7 @@ interface SetupViewProps {
   showCustomInput: boolean;
   setShowCustomInput: (val: boolean) => void;
   handleStartTimer: () => void;
+  onBack?: () => void;
 }
 
 export default function SetupView({
@@ -38,6 +38,7 @@ export default function SetupView({
   showCustomInput,
   setShowCustomInput,
   handleStartTimer,
+  onBack,
 }: SetupViewProps) {
   const filteredCategories = useMemo(() => {
     if (!searchQuery) return addictionCategories;
@@ -51,7 +52,7 @@ export default function SetupView({
   }, [searchQuery]);
 
   const selectAddiction = (addiction: string) => {
-    setFormData((prev) => ({ ...prev, addiction }));
+    setFormData({ addiction });
     setShowCustomInput(false);
   };
 
@@ -64,13 +65,25 @@ export default function SetupView({
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
       <div className="w-full max-w-lg mx-auto py-8 px-4">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-slate-800 mb-2">
-            Start Your Journey
-          </h1>
-          <p className="text-slate-500">
-            Track your progress and stay motivated
-          </p>
+        {/* Header with back button */}
+        <div className="flex items-center mb-6">
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="text-slate-400 hover:text-slate-600 text-2xl mr-4"
+            >
+              ←
+            </button>
+          )}
+          <div className="flex-1 text-center">
+            <h1 className="text-2xl font-bold text-slate-800 mb-2">
+              Start Your Journey
+            </h1>
+            <p className="text-slate-500">
+              Track your progress and stay motivated
+            </p>
+          </div>
+          {onBack && <div className="w-8" />} {/* Spacer for alignment */}
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
@@ -85,12 +98,7 @@ export default function SetupView({
               <input
                 type="date"
                 value={formData.startDate}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    startDate: e.target.value,
-                  }))
-                }
+                onChange={(e) => setFormData({ startDate: e.target.value })}
                 max={new Date().toISOString().split("T")[0]}
                 className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500"
               />
@@ -102,12 +110,7 @@ export default function SetupView({
               <input
                 type="time"
                 value={formData.startTime}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    startTime: e.target.value,
-                  }))
-                }
+                onChange={(e) => setFormData({ startTime: e.target.value })}
                 className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500"
               />
             </div>
@@ -126,11 +129,7 @@ export default function SetupView({
               </span>
               <button
                 onClick={() => {
-                  setFormData((prev) => ({
-                    ...prev,
-                    addiction: "",
-                    customAddiction: "",
-                  }));
+                  setFormData({ addiction: "", customAddiction: "" });
                   setShowCustomInput(false);
                 }}
                 className="text-cyan-600 hover:text-cyan-800"
@@ -194,8 +193,7 @@ export default function SetupView({
             <button
               onClick={() => {
                 setShowCustomInput(!showCustomInput);
-                if (!showCustomInput)
-                  setFormData((prev) => ({ ...prev, addiction: "" }));
+                if (!showCustomInput) setFormData({ addiction: "" });
               }}
               className="text-cyan-600 hover:text-cyan-700 font-medium text-sm mb-3"
             >
@@ -207,10 +205,7 @@ export default function SetupView({
                 placeholder="Enter your addiction..."
                 value={formData.customAddiction}
                 onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    customAddiction: e.target.value,
-                  }))
+                  setFormData({ customAddiction: e.target.value })
                 }
                 className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500"
               />

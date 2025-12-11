@@ -2,6 +2,18 @@
 
 import React, { useState } from "react";
 import WalletLogin from "~/components/wallet/WalletLogin";
+import { useFrameContext } from "~/components/providers/FrameProvider";
+
+interface FarcasterUser {
+  fid: number;
+  username?: string;
+  displayName?: string;
+  pfpUrl?: string;
+}
+
+interface MiniAppContext {
+  user?: FarcasterUser;
+}
 
 interface PledgeViewProps {
   onPledgeConfirmed: (motivation: string, walletAddress?: string) => void;
@@ -83,11 +95,18 @@ export default function PledgeView({
   onPledgeConfirmed,
   onClose,
 }: PledgeViewProps) {
+  const frameContext = useFrameContext();
   const [step, setStep] = useState<PledgeStep>("login");
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [authStrategy, setAuthStrategy] = useState<string | null>(null);
   const [selectedMotivations, setSelectedMotivations] = useState<string[]>([]);
   const [pledgeAccepted, setPledgeAccepted] = useState(false);
+
+  // Extract Farcaster user from frame context
+  const isInMiniApp = frameContext?.isInMiniApp ?? false;
+  const farcasterUser = isInMiniApp
+    ? (frameContext?.context as MiniAppContext)?.user ?? null
+    : null;
 
   const handleWalletConnected = (address: string, strategy: string) => {
     setWalletAddress(address);
@@ -153,6 +172,8 @@ export default function PledgeView({
             <WalletLogin
               onConnected={handleWalletConnected}
               onSkip={handleSkipLogin}
+              farcasterUser={farcasterUser}
+              isInMiniApp={isInMiniApp}
             />
           </div>
 
