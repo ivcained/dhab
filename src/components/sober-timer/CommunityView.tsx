@@ -29,22 +29,98 @@ export default function CommunityView({
   const [expandedComments, setExpandedComments] = useState<string | null>(null);
   const [newComment, setNewComment] = useState<Record<string, string>>({});
 
+  // Transform database reactions to Post reactions format
+  const transformReactions = React.useCallback(
+    (dbReactions: { emoji: string; count: number; users: string[] }[]) => {
+      const defaultReactions = getDefaultReactions();
+      return defaultReactions.map((defaultR) => {
+        const dbReaction = dbReactions.find((r) => r.emoji === defaultR.emoji);
+        return {
+          emoji: defaultR.emoji,
+          count: dbReaction?.count || 0,
+          userReacted: dbReaction?.users?.includes(userAnonymousId) || false,
+        };
+      });
+    },
+    [userAnonymousId]
+  );
+
+  // Load posts from database
   useEffect(() => {
-    const saved = localStorage.getItem(`community_posts_${addiction}`);
-    if (saved) setPosts(JSON.parse(saved));
-    else setPosts(getSamplePosts());
-  }, [addiction]);
+    const loadPosts = async () => {
+      try {
+        const response = await fetch(
+          `/api/community?addiction=${encodeURIComponent(addiction)}`
+        );
+        const data = await response.json();
+
+        if (data.posts && data.posts.length > 0) {
+          // Transform database posts to match Post interface
+          const transformedPosts: Post[] = data.posts.map(
+            (dbPost: {
+              id: string;
+              anonymousId: string;
+              content: string;
+              milestone?: string;
+              timestamp: number;
+              reactions?: { emoji: string; count: number; users: string[] }[];
+              comments?: {
+                id: string;
+                anonymousId: string;
+                content: string;
+                timestamp: number;
+                flagCount: number;
+              }[];
+              flagCount: number;
+            }) => ({
+              id: dbPost.id,
+              anonymousId: dbPost.anonymousId,
+              content: dbPost.content,
+              milestone: dbPost.milestone,
+              timestamp: dbPost.timestamp,
+              reactions: transformReactions(dbPost.reactions || []),
+              comments:
+                dbPost.comments?.map((c) => ({
+                  id: c.id,
+                  anonymousId: c.anonymousId,
+                  content: c.content,
+                  timestamp: c.timestamp,
+                  flagCount: c.flagCount || 0,
+                  flaggedByUser: false, // Will be checked separately if needed
+                })) || [],
+              flagCount: dbPost.flagCount || 0,
+              flaggedByUser: false, // Will be checked separately if needed
+            })
+          );
+          setPosts(transformedPosts);
+        } else {
+          // Fallback to sample posts if no database posts
+          setPosts(getSamplePosts());
+        }
+      } catch (error) {
+        console.error("Failed to load posts from database:", error);
+        // Fallback to localStorage or sample posts
+        const saved = localStorage.getItem(`community_posts_${addiction}`);
+        if (saved) setPosts(JSON.parse(saved));
+        else setPosts(getSamplePosts());
+      }
+    };
+
+    loadPosts();
+  }, [addiction, transformReactions]);
 
   const savePosts = (newPosts: Post[]) => {
     setPosts(newPosts);
+    // Keep localStorage as backup
     localStorage.setItem(
       `community_posts_${addiction}`,
       JSON.stringify(newPosts)
     );
   };
 
-  const handleCreatePost = () => {
+  const handleCreatePost = async () => {
     if (!newPostContent.trim()) return;
+
     const newPost: Post = {
       id: Date.now().toString(),
       anonymousId: userAnonymousId,
@@ -56,13 +132,51 @@ export default function CommunityView({
       flagCount: 0,
       flaggedByUser: false,
     };
+
+    // Save to database
+    try {
+      await fetch("/api/community", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "create_post",
+          id: newPost.id,
+          anonymousId: newPost.anonymousId,
+          addiction,
+          content: newPost.content,
+          milestone: newPost.milestone,
+          timestamp: newPost.timestamp,
+        }),
+      });
+    } catch (error) {
+      console.error("Failed to save post to database:", error);
+    }
+
+    // Update local state
     savePosts([newPost, ...posts]);
     setNewPostContent("");
     setNewPostMilestone("");
     setShowNewPost(false);
   };
 
-  const handleReaction = (postId: string, emoji: string) => {
+  const handleReaction = async (postId: string, emoji: string) => {
+    // Save to database
+    try {
+      await fetch("/api/community", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "toggle_reaction",
+          postId,
+          anonymousId: userAnonymousId,
+          emoji,
+        }),
+      });
+    } catch (error) {
+      console.error("Failed to save reaction to database:", error);
+    }
+
+    // Update local state
     savePosts(
       posts.map((post) => {
         if (post.id !== postId) return post;
@@ -82,9 +196,10 @@ export default function CommunityView({
     );
   };
 
-  const handleAddComment = (postId: string) => {
+  const handleAddComment = async (postId: string) => {
     const content = newComment[postId]?.trim();
     if (!content) return;
+
     const comment: Comment = {
       id: Date.now().toString(),
       anonymousId: userAnonymousId,
@@ -93,6 +208,26 @@ export default function CommunityView({
       flagCount: 0,
       flaggedByUser: false,
     };
+
+    // Save to database
+    try {
+      await fetch("/api/community", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "add_comment",
+          id: comment.id,
+          postId,
+          anonymousId: comment.anonymousId,
+          content: comment.content,
+          timestamp: comment.timestamp,
+        }),
+      });
+    } catch (error) {
+      console.error("Failed to save comment to database:", error);
+    }
+
+    // Update local state
     savePosts(
       posts.map((post) =>
         post.id === postId
@@ -103,7 +238,24 @@ export default function CommunityView({
     setNewComment({ ...newComment, [postId]: "" });
   };
 
-  const handleFlagPost = (postId: string) => {
+  const handleFlagPost = async (postId: string) => {
+    // Save to database
+    try {
+      await fetch("/api/community", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "flag",
+          targetType: "post",
+          targetId: postId,
+          anonymousId: userAnonymousId,
+        }),
+      });
+    } catch (error) {
+      console.error("Failed to flag post in database:", error);
+    }
+
+    // Update local state
     savePosts(
       posts.map((post) =>
         post.id === postId && !post.flaggedByUser
@@ -113,7 +265,24 @@ export default function CommunityView({
     );
   };
 
-  const handleFlagComment = (postId: string, commentId: string) => {
+  const handleFlagComment = async (postId: string, commentId: string) => {
+    // Save to database
+    try {
+      await fetch("/api/community", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "flag",
+          targetType: "comment",
+          targetId: commentId,
+          anonymousId: userAnonymousId,
+        }),
+      });
+    } catch (error) {
+      console.error("Failed to flag comment in database:", error);
+    }
+
+    // Update local state
     savePosts(
       posts.map((post) => {
         if (post.id !== postId) return post;
