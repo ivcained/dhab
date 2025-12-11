@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import TimerView from "./sober-timer/TimerView";
 import SetupView from "./sober-timer/SetupView";
 import CommunityView from "./sober-timer/CommunityView";
 import PledgeView from "./sober-timer/PledgeView";
 import { generateAnonymousId } from "~/lib/community";
+import { useFrameContext } from "./providers/FrameProvider";
 
 interface SoberTimerData {
   startDate: string;
@@ -15,6 +16,15 @@ interface SoberTimerData {
   dailyCost: number;
   motivation?: string;
   pledgeDate?: string;
+}
+
+interface MiniAppContext {
+  user?: {
+    fid: number;
+    username?: string;
+    displayName?: string;
+    pfpUrl?: string;
+  };
 }
 
 interface TimerDisplay {
@@ -28,6 +38,7 @@ type ViewType = "pledge" | "setup" | "timer" | "community";
 type TimerTabType = "summary" | "savings";
 
 export default function SoberTimer() {
+  const frameContext = useFrameContext();
   const [view, setView] = useState<ViewType>("pledge");
   const [formData, setFormData] = useState<SoberTimerData>({
     startDate: "",
@@ -50,26 +61,116 @@ export default function SoberTimer() {
   const [activeTimerTab, setActiveTimerTab] = useState<TimerTabType>("summary");
   const [isEditingCost, setIsEditingCost] = useState(false);
   const [tempCost, setTempCost] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
-  // Generate anonymous ID based on device fingerprint + addiction
+  // Get user FID from Farcaster context
+  const userFid = useMemo(() => {
+    const context = frameContext?.context as MiniAppContext | null;
+    return context?.user?.fid || null;
+  }, [frameContext]);
+
+  // Generate anonymous ID based on FID + addiction (or device fingerprint as fallback)
   const userAnonymousId = useMemo(() => {
-    const seed = `${navigator.userAgent}-${formData.addiction}-${formData.startDate}`;
+    const seed = userFid
+      ? `fid-${userFid}-${formData.addiction}-${formData.startDate}`
+      : `${typeof navigator !== "undefined" ? navigator.userAgent : "server"}-${
+          formData.addiction
+        }-${formData.startDate}`;
     return generateAnonymousId(seed);
-  }, [formData.addiction, formData.startDate]);
+  }, [userFid, formData.addiction, formData.startDate]);
 
-  useEffect(() => {
-    const saved = localStorage.getItem("soberTimerData");
-    if (saved) {
-      const parsed = JSON.parse(saved) as SoberTimerData;
-      setFormData({ ...parsed, dailyCost: parsed.dailyCost || 8 });
-      if (parsed.startDate && parsed.addiction) {
-        setView("timer");
-      } else if (parsed.pledgeDate === new Date().toISOString().split("T")[0]) {
-        // Already pledged today, go to setup
-        setView("setup");
+  // Save data to database
+  const saveToDatabase = useCallback(
+    async (data: SoberTimerData) => {
+      if (!userFid) return;
+
+      setIsSaving(true);
+      try {
+        await fetch("/api/sobriety", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fid: userFid,
+            ...data,
+          }),
+        });
+      } catch (error) {
+        console.error("Failed to save to database:", error);
+      } finally {
+        setIsSaving(false);
       }
+    },
+    [userFid]
+  );
+
+  // Load data from database or localStorage
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true);
+
+      // If user has FID, try to load from database first
+      if (userFid) {
+        try {
+          const response = await fetch(`/api/sobriety?fid=${userFid}`);
+          const result = await response.json();
+
+          if (result.data) {
+            const dbData: SoberTimerData = {
+              startDate: result.data.startDate || "",
+              startTime: result.data.startTime || "",
+              addiction: result.data.addiction || "",
+              customAddiction: result.data.customAddiction || "",
+              dailyCost: result.data.dailyCost || 8,
+              motivation: result.data.motivation || "",
+              pledgeDate: result.data.pledgeDate || "",
+            };
+            setFormData(dbData);
+            // Also save to localStorage as backup
+            localStorage.setItem("soberTimerData", JSON.stringify(dbData));
+
+            if (dbData.startDate && dbData.addiction) {
+              setView("timer");
+            } else if (
+              dbData.pledgeDate === new Date().toISOString().split("T")[0]
+            ) {
+              setView("setup");
+            }
+            setIsLoading(false);
+            return;
+          }
+        } catch (error) {
+          console.error("Failed to load from database:", error);
+        }
+      }
+
+      // Fallback to localStorage
+      const saved = localStorage.getItem("soberTimerData");
+      if (saved) {
+        const parsed = JSON.parse(saved) as SoberTimerData;
+        setFormData({ ...parsed, dailyCost: parsed.dailyCost || 8 });
+        if (parsed.startDate && parsed.addiction) {
+          setView("timer");
+        } else if (
+          parsed.pledgeDate === new Date().toISOString().split("T")[0]
+        ) {
+          setView("setup");
+        }
+
+        // If we have FID and localStorage data, sync to database
+        if (userFid && parsed.startDate && parsed.addiction) {
+          saveToDatabase(parsed);
+        }
+      }
+
+      setIsLoading(false);
+    };
+
+    // Wait for frame context to be available
+    if (frameContext !== null) {
+      loadData();
     }
-  }, []);
+  }, [userFid, frameContext, saveToDatabase]);
 
   useEffect(() => {
     if (view !== "timer" || !formData.startDate) return;
@@ -94,7 +195,7 @@ export default function SoberTimer() {
     return () => clearInterval(interval);
   }, [view, formData.startDate, formData.startTime]);
 
-  const handleStartTimer = () => {
+  const handleStartTimer = async () => {
     if (!formData.startDate) {
       alert("Please select a start date");
       return;
@@ -121,10 +222,23 @@ export default function SoberTimer() {
     const data = { ...formData, addiction, startTime };
     localStorage.setItem("soberTimerData", JSON.stringify(data));
     setFormData(data);
+
+    // Save to database if user has FID
+    await saveToDatabase(data);
+
     setView("timer");
   };
 
-  const handleReset = () => {
+  const handleReset = async () => {
+    // Delete from database if user has FID
+    if (userFid) {
+      try {
+        await fetch(`/api/sobriety?fid=${userFid}`, { method: "DELETE" });
+      } catch (error) {
+        console.error("Failed to delete from database:", error);
+      }
+    }
+
     localStorage.removeItem("soberTimerData");
     setFormData({
       startDate: "",
@@ -140,23 +254,44 @@ export default function SoberTimer() {
     setActiveTimerTab("summary");
   };
 
-  const handleCostUpdate = () => {
+  const handleCostUpdate = async () => {
     const newCost = parseFloat(tempCost);
     if (!isNaN(newCost) && newCost >= 0) {
       const data = { ...formData, dailyCost: newCost };
       setFormData(data);
       localStorage.setItem("soberTimerData", JSON.stringify(data));
+
+      // Save to database if user has FID
+      await saveToDatabase(data);
     }
     setIsEditingCost(false);
   };
 
-  const handlePledgeConfirmed = (motivation: string) => {
+  const handlePledgeConfirmed = async (motivation: string) => {
     const today = new Date().toISOString().split("T")[0];
     const updatedData = { ...formData, motivation, pledgeDate: today };
     setFormData(updatedData);
     localStorage.setItem("soberTimerData", JSON.stringify(updatedData));
+
+    // Save to database if user has FID
+    if (updatedData.startDate && updatedData.addiction) {
+      await saveToDatabase(updatedData);
+    }
+
     setView("setup");
   };
+
+  // Show loading state while fetching data
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-indigo-900 to-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white/70">Loading your journey...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (view === "pledge") {
     return (
