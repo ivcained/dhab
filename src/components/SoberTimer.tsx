@@ -106,7 +106,19 @@ export default function SoberTimer() {
       alert("Please select or enter an addiction");
       return;
     }
-    const data = { ...formData, addiction };
+
+    // If no time specified and date is today, use current time so timer starts at 00:00:00
+    let startTime = formData.startTime;
+    const today = new Date().toISOString().split("T")[0];
+    if (!startTime && formData.startDate === today) {
+      const now = new Date();
+      startTime = `${now.getHours().toString().padStart(2, "0")}:${now
+        .getMinutes()
+        .toString()
+        .padStart(2, "0")}`;
+    }
+
+    const data = { ...formData, addiction, startTime };
     localStorage.setItem("soberTimerData", JSON.stringify(data));
     setFormData(data);
     setView("timer");
