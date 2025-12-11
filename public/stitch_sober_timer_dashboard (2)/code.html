@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Community Feed</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#0EA5E9", // Sky blue as seen in "Money" button or similar accents
+                        "primary-dark": "#0284C7",
+                        "background-light": "#F3F4F6", // Light gray background for feed
+                        "background-dark": "#1F2937", // Dark gray for dark mode
+                        "card-light": "#FFFFFF",
+                        "card-dark": "#111827",
+                        "text-main-light": "#111827",
+                        "text-main-dark": "#F9FAFB",
+                        "text-secondary-light": "#6B7280",
+                        "text-secondary-dark": "#9CA3AF",
+                        "brand-teal": "#2DD4BF", // Teal accents from the first screenshot
+                        "brand-blue": "#38BDF8", // Blue accents
+                        "brand-purple": "#818CF8", // Purple accents
+                    },
+                    fontFamily: {
+                        display: ["Inter", "sans-serif"],
+                        body: ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.5rem",
+                        'xl': '1rem',
+                        '2xl': '1.5rem',
+                        '3xl': '2rem',
+                    },
+                },
+            },
+        };
+    </script>
+<style>.no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-body antialiased min-h-screen pb-20">
+<div class="h-12 w-full bg-card-light dark:bg-card-dark flex items-center justify-between px-6 sticky top-0 z-50 border-b border-gray-100 dark:border-gray-800">
+<div class="text-sm font-semibold text-text-main-light dark:text-text-main-dark">9:41</div>
+<div class="flex items-center space-x-2">
+<span class="material-icons text-xs text-text-main-light dark:text-text-main-dark">signal_cellular_alt</span>
+<span class="material-icons text-xs text-text-main-light dark:text-text-main-dark">wifi</span>
+<span class="material-icons text-xs text-text-main-light dark:text-text-main-dark">battery_full</span>
+</div>
+</div>
+<div class="bg-card-light dark:bg-card-dark px-4 py-3 border-b border-gray-100 dark:border-gray-800 sticky top-12 z-40">
+<div class="flex items-center justify-between mb-4">
+<div class="flex space-x-6 text-sm font-medium">
+<button class="text-primary border-b-2 border-primary pb-1">Communities</button>
+<button class="text-text-secondary-light dark:text-text-secondary-dark hover:text-text-main-light dark:hover:text-text-main-dark pb-1">Following</button>
+<button class="text-text-secondary-light dark:text-text-secondary-dark hover:text-text-main-light dark:hover:text-text-main-dark pb-1">Groups</button>
+</div>
+<button class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+<span class="material-icons text-text-main-light dark:text-text-main-dark">person_add</span>
+</button>
+</div>
+<div class="flex items-center space-x-2 text-text-main-light dark:text-text-main-dark mb-4">
+<span class="material-icons">menu</span>
+<span class="font-semibold text-lg">Alcohol</span>
+</div>
+<div class="flex space-x-3 overflow-x-auto no-scrollbar pb-1">
+<button class="bg-primary text-white px-4 py-1.5 rounded-full text-sm font-medium shadow-sm whitespace-nowrap">
+                3 Weeks
+            </button>
+<button class="bg-gray-100 dark:bg-gray-800 text-text-secondary-light dark:text-text-secondary-dark px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap">
+                25 Days
+            </button>
+<button class="bg-gray-100 dark:bg-gray-800 text-text-secondary-light dark:text-text-secondary-dark px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap">
+                All milestones
+            </button>
+</div>
+</div>
+<main class="p-4 space-y-4">
+<article class="bg-card-light dark:bg-card-dark rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-800">
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center space-x-3">
+<img alt="User Avatar" class="w-10 h-10 rounded-full object-cover ring-2 ring-primary ring-offset-2 ring-offset-card-light dark:ring-offset-card-dark" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAyj8qlo1E_NBzrqN9rHyOe56Tu3hQEjdoxPe1_WgfZ3Ixy-qQlvB2QPODxJ0SjUQNWsiOQ95VGUjwNjCMQ582n-g20mMD7OO3ZtHN9y6WmxzHpCYrYb5AlCDaXySKvkZh8imrlpuHQVYTyvtXlpcMBMIfk3YtQjEYWgXSnY4onEkCR2twF88NFzBMXUv1jVtPKmonMgYqydey2dOXLlZSi2xu_E9UrYp_zHYv5kwW2--6-nT56Gcs9YqWeajuSzv4ewAC4PXv2De4"/>
+<div>
+<h3 class="font-bold text-text-main-light dark:text-text-main-dark text-sm">SoberCC</h3>
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">Oct 17, 2022</p>
+</div>
+</div>
+<button class="text-text-secondary-light dark:text-text-secondary-dark">
+<span class="material-icons">more_horiz</span>
+</button>
+</div>
+<div class="mb-4 rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-900">
+<img alt="Illustration of a happy woman in nature" class="w-full h-64 object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBl7OruGajXRvfWXPDAtMHYKOgUetcnJBziyIPo5b5RzywjuMwowBLB_5otnHs8Z5qIozK6ExuWqPicg-PJjRa4LjggS2kiDQxITDQ29eIfMeq7fkgiKeXiod4zutS7d_dp5bAPHsywjJgH5SuMkvtFWQjC4PPxH0bMt5U_RgFT3dXGOBUQtN4to7_PTS1t5x9zKb2Fukx9PXBfdXHqKuGuzTALUJYIn8Pa7fHLFC7w7DNeMslIAHxEeYVE_tWooAXckC81iUZekIM"/>
+</div>
+<p class="text-text-main-light dark:text-text-main-dark text-sm leading-relaxed mb-4">
+                The idea of never drinking again still frightens me, at the same time I never want to drink again. Will just keep at it, one day after the next. I feel free right now! And like I'm on the right path.
+            </p>
+<div class="flex items-center space-x-4 mb-4 border-b border-gray-100 dark:border-gray-800 pb-3">
+<div class="flex items-center space-x-1">
+<span class="text-lg">👍</span>
+<span class="text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark">17</span>
+</div>
+<div class="flex items-center space-x-1">
+<span class="text-lg">😐</span>
+<span class="text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark">1</span>
+</div>
+<div class="flex items-center space-x-1">
+<span class="text-lg">🎉</span>
+<span class="text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark">8</span>
+</div>
+<div class="flex items-center space-x-1">
+<span class="text-lg">❤️</span>
+<span class="text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark">22</span>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-primary text-sm font-medium cursor-pointer">Add a comment</span>
+<span class="material-icons text-text-secondary-light dark:text-text-secondary-dark text-sm">sentiment_satisfied_alt</span>
+</div>
+</article>
+<article class="bg-card-light dark:bg-card-dark rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-800">
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center space-x-3">
+<div class="w-10 h-10 rounded-full bg-brand-purple flex items-center justify-center text-white font-bold text-sm">JS</div>
+<div>
+<h3 class="font-bold text-text-main-light dark:text-text-main-dark text-sm">JohnSmith_99</h3>
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">2 hours ago</p>
+</div>
+</div>
+<button class="text-text-secondary-light dark:text-text-secondary-dark">
+<span class="material-icons">more_horiz</span>
+</button>
+</div>
+<div class="p-4 bg-brand-teal bg-opacity-10 dark:bg-opacity-20 rounded-xl mb-4">
+<h4 class="font-bold text-brand-teal mb-1">🎉 Milestone Reached!</h4>
+<p class="text-text-main-light dark:text-text-main-dark text-sm">I've officially made it to 6 months sober. It hasn't been easy, but every morning waking up without a hangover makes it worth it.</p>
+</div>
+<div class="flex items-center space-x-4 mb-2">
+<div class="flex items-center space-x-1">
+<span class="text-lg">👏</span>
+<span class="text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark">45</span>
+</div>
+<div class="flex items-center space-x-1">
+<span class="text-lg">💪</span>
+<span class="text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark">12</span>
+</div>
+</div>
+<div class="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-3">
+<span class="text-primary text-sm font-medium cursor-pointer">Add a comment</span>
+<span class="material-icons text-text-secondary-light dark:text-text-secondary-dark text-sm">sentiment_satisfied_alt</span>
+</div>
+</article>
+<article class="bg-card-light dark:bg-card-dark rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-800">
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center space-x-3">
+<img alt="User Avatar" class="w-10 h-10 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDcsSbRr7FxEzHxJ6yb2XmWwI55CwazKEv4RiZcOBERioPWwlrD9WVdy8ewrXFftLnKb9CP6fq-2o9J4u7FpX2TNTKx67U_HZvNycFSF-lUXQC-FnQT7YjYECPjbLCWH2si_LOKkyLcjwHQIbHP-VbOQnyYUbT1xHO9gx1-Llnh2YCTTKtoSSPySqWNItso4x_5rTrG0VznF3ObFvrr9USCEcXQLvt3_k-NNNNSfYXN6yWdUeJboQq0wiPaPpDNUai6GAupbCfxlhE"/>
+<div>
+<h3 class="font-bold text-text-main-light dark:text-text-main-dark text-sm">AliceW</h3>
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">5 hours ago</p>
+</div>
+</div>
+</div>
+<p class="text-text-main-light dark:text-text-main-dark text-sm leading-relaxed mb-4">
+               Just checking in. Had a rough craving today but went for a run instead. Feeling much better now. Stay strong everyone!
+            </p>
+<div class="flex items-center space-x-4">
+<div class="flex items-center space-x-1">
+<span class="text-lg">❤️</span>
+<span class="text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark">8</span>
+</div>
+</div>
+</article>
+</main>
+<nav class="fixed bottom-0 w-full bg-card-light dark:bg-card-dark border-t border-gray-200 dark:border-gray-800 pb-5 pt-2 px-6 z-50">
+<div class="flex justify-between items-center">
+<button class="flex flex-col items-center justify-center space-y-1 w-16">
+<div class="flex flex-col items-start space-y-0.5">
+<div class="h-0.5 w-5 bg-brand-blue rounded-full"></div>
+<div class="h-0.5 w-4 bg-brand-blue rounded-full"></div>
+<div class="h-0.5 w-3 bg-brand-blue rounded-full"></div>
+<div class="h-0.5 w-2 bg-brand-blue rounded-full"></div>
+</div>
+<span class="text-[10px] font-medium text-brand-blue mt-1">Addictions</span>
+</button>
+<button class="flex flex-col items-center justify-center space-y-1 w-16 text-text-secondary-light dark:text-text-secondary-dark hover:text-text-main-light dark:hover:text-text-main-dark">
+<span class="material-icons text-2xl">front_hand</span>
+<span class="text-[10px] font-medium">Pledges</span>
+</button>
+<button class="flex flex-col items-center justify-center space-y-1 w-16 text-text-main-light dark:text-text-main-dark">
+<span class="material-icons text-2xl text-primary">forum</span>
+<span class="text-[10px] font-medium text-primary">Community</span>
+</button>
+<button class="flex flex-col items-center justify-center space-y-1 w-16 text-text-secondary-light dark:text-text-secondary-dark hover:text-text-main-light dark:hover:text-text-main-dark">
+<span class="material-icons text-2xl">local_fire_department</span>
+<span class="text-[10px] font-medium">Motivation</span>
+</button>
+<button class="flex flex-col items-center justify-center space-y-1 w-16 text-text-secondary-light dark:text-text-secondary-dark hover:text-text-main-light dark:hover:text-text-main-dark">
+<span class="material-icons text-2xl">help_outline</span>
+<span class="text-[10px] font-medium">Support</span>
+</button>
+</div>
+</nav>
+
+</body></html>

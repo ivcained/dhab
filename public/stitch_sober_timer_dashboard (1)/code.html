@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Savings Tracker</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#29b6f6", // Light blue accent
+              "background-light": "#f3f4f6", // Light grey for light mode
+              "background-dark": "#1a3a4f", // Deep blue-green from screenshot
+              "card-dark": "#132d3d", // Darker card bg
+              "success-green": "#00c853", // Green for savings
+              "nav-inactive": "#9ca3af",
+            },
+            fontFamily: {
+              display: ["Inter", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "0.5rem",
+            },
+          },
+        },
+      };
+    </script>
+<style>body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-gray-900 dark:text-white min-h-screen font-display antialiased flex justify-center items-start pt-4 pb-4">
+<div class="w-full max-w-sm bg-white dark:bg-background-dark shadow-2xl rounded-[3rem] overflow-hidden border-8 border-gray-900 relative min-h-[800px] flex flex-col">
+<div class="h-6 w-full bg-transparent"></div>
+<div class="px-5 py-4 flex items-center justify-between">
+<button class="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white transition">
+<span class="material-icons-outlined text-2xl">arrow_back_ios</span>
+</button>
+<h1 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Alcohol Savings</h1>
+<button class="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white transition">
+<span class="material-icons-outlined text-2xl">settings</span>
+</button>
+</div>
+<div class="px-5 mt-2">
+<div class="flex space-x-2">
+<button class="bg-primary bg-opacity-90 hover:bg-opacity-100 text-white px-5 py-1.5 rounded-lg text-sm font-medium transition shadow-sm">
+                    Money
+                </button>
+<button class="bg-gray-200 dark:bg-card-dark text-gray-600 dark:text-gray-400 px-5 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-700 transition">
+                    Calories
+                </button>
+</div>
+</div>
+<div class="flex-1 px-5 mt-6 overflow-y-auto pb-24">
+<div class="mb-8">
+<h2 class="text-sm font-medium text-gray-500 dark:text-gray-300 mb-1">Current savings</h2>
+<div class="flex items-baseline">
+<span class="text-4xl font-bold tracking-tight text-gray-900 dark:text-white">$184.00</span>
+</div>
+<p class="text-xs text-gray-400 dark:text-gray-500 mt-1">(or 9 twenty-dollar bills)</p>
+<div class="flex space-x-1 mt-4">
+<div class="h-2 w-8 bg-success-green rounded-sm"></div>
+<div class="h-2 w-8 bg-success-green rounded-sm"></div>
+<div class="h-2 w-8 bg-success-green rounded-sm"></div>
+<div class="h-2 w-8 bg-success-green rounded-sm"></div>
+<div class="h-2 w-8 bg-success-green rounded-sm"></div>
+<div class="h-2 w-8 bg-success-green rounded-sm"></div>
+<div class="h-2 w-8 bg-success-green rounded-sm"></div>
+<div class="h-2 w-8 bg-success-green rounded-sm"></div>
+<div class="h-2 w-8 bg-success-green rounded-sm"></div>
+</div>
+</div>
+<div class="space-y-0 divide-y divide-gray-200 dark:divide-gray-700 border-t border-b border-gray-200 dark:border-gray-700">
+<div class="flex justify-between items-center py-4">
+<span class="text-sm text-gray-600 dark:text-gray-400">Days since start date</span>
+<span class="text-sm font-semibold text-gray-900 dark:text-white">23 days</span>
+</div>
+<div class="flex justify-between items-center py-4">
+<span class="text-sm text-gray-600 dark:text-gray-400">Money spent per day</span>
+<div class="flex items-center space-x-2 text-success-green">
+<span class="text-sm font-bold">$8.00</span>
+<span class="material-icons-outlined text-sm cursor-pointer hover:text-green-400">edit</span>
+</div>
+</div>
+</div>
+<div class="mt-8">
+<h2 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Projected savings</h2>
+<div class="space-y-0 divide-y divide-gray-200 dark:divide-gray-700 border-t border-b border-gray-200 dark:border-gray-700">
+<div class="flex justify-between items-center py-4">
+<span class="text-sm text-gray-600 dark:text-gray-400">Projected monthly savings</span>
+<span class="text-sm font-medium text-primary dark:text-primary">$243.33</span>
+</div>
+<div class="flex justify-between items-center py-4">
+<span class="text-sm text-gray-600 dark:text-gray-400">Projected yearly savings</span>
+<span class="text-sm font-medium text-primary dark:text-primary">$2,920.00</span>
+</div>
+<div class="flex justify-between items-center py-4">
+<span class="text-sm text-gray-600 dark:text-gray-400">Projected 5-year savings</span>
+<span class="text-sm font-medium text-primary dark:text-primary">$14,600.00</span>
+</div>
+</div>
+</div>
+<div class="mt-8 p-4 bg-gray-100 dark:bg-card-dark rounded-xl flex items-start gap-3">
+<span class="material-icons-outlined text-primary text-xl mt-0.5">savings</span>
+<div>
+<h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Keep it up!</h3>
+<p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+                        You're saving enough to buy a new smartphone every year. Great job investing in yourself.
+                    </p>
+</div>
+</div>
+</div>
+<div class="bg-white dark:bg-card-dark border-t border-gray-200 dark:border-gray-800 h-[80px] px-6 pb-4 flex justify-between items-center absolute bottom-0 w-full z-10">
+<button class="flex flex-col items-center justify-center space-y-1 w-1/5 group">
+<span class="material-icons-outlined text-primary text-2xl">format_list_bulleted</span>
+<span class="text-[10px] text-primary font-medium">Addictions</span>
+</button>
+<button class="flex flex-col items-center justify-center space-y-1 w-1/5 group text-gray-400 dark:text-nav-inactive hover:text-primary dark:hover:text-white transition">
+<span class="material-icons-outlined text-2xl">front_hand</span>
+<span class="text-[10px] font-medium">Pledges</span>
+</button>
+<button class="flex flex-col items-center justify-center space-y-1 w-1/5 group text-gray-400 dark:text-nav-inactive hover:text-primary dark:hover:text-white transition">
+<span class="material-icons-outlined text-2xl">forum</span>
+<span class="text-[10px] font-medium">Community</span>
+</button>
+<button class="flex flex-col items-center justify-center space-y-1 w-1/5 group text-gray-400 dark:text-nav-inactive hover:text-primary dark:hover:text-white transition">
+<span class="material-icons-outlined text-2xl">local_fire_department</span>
+<span class="text-[10px] font-medium">Motivation</span>
+</button>
+<button class="flex flex-col items-center justify-center space-y-1 w-1/5 group text-gray-400 dark:text-nav-inactive hover:text-primary dark:hover:text-white transition">
+<span class="material-icons-outlined text-2xl">help_outline</span>
+<span class="text-[10px] font-medium">Support</span>
+</button>
+</div>
+</div>
+<script>
+        // Force dark mode initially to match the screenshot vibe
+        document.documentElement.classList.add('dark');
+    </script>
+
+</body></html>
