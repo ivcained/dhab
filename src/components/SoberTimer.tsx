@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import TimerView from "./sober-timer/TimerView";
 import SetupView from "./sober-timer/SetupView";
 import CommunityView from "./sober-timer/CommunityView";
+import PledgeView from "./sober-timer/PledgeView";
 import { generateAnonymousId } from "~/lib/community";
 
 interface SoberTimerData {
@@ -12,6 +13,8 @@ interface SoberTimerData {
   addiction: string;
   customAddiction: string;
   dailyCost: number;
+  motivation?: string;
+  pledgeDate?: string;
 }
 
 interface TimerDisplay {
@@ -21,17 +24,19 @@ interface TimerDisplay {
   seconds: number;
 }
 
-type ViewType = "setup" | "timer" | "community";
+type ViewType = "pledge" | "setup" | "timer" | "community";
 type TimerTabType = "summary" | "savings";
 
 export default function SoberTimer() {
-  const [view, setView] = useState<ViewType>("setup");
+  const [view, setView] = useState<ViewType>("pledge");
   const [formData, setFormData] = useState<SoberTimerData>({
     startDate: "",
     startTime: "",
     addiction: "",
     customAddiction: "",
     dailyCost: 8,
+    motivation: "",
+    pledgeDate: "",
   });
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -57,7 +62,12 @@ export default function SoberTimer() {
     if (saved) {
       const parsed = JSON.parse(saved) as SoberTimerData;
       setFormData({ ...parsed, dailyCost: parsed.dailyCost || 8 });
-      if (parsed.startDate && parsed.addiction) setView("timer");
+      if (parsed.startDate && parsed.addiction) {
+        setView("timer");
+      } else if (parsed.pledgeDate === new Date().toISOString().split("T")[0]) {
+        // Already pledged today, go to setup
+        setView("setup");
+      }
     }
   }, []);
 
@@ -127,6 +137,28 @@ export default function SoberTimer() {
     }
     setIsEditingCost(false);
   };
+
+  const handlePledgeConfirmed = (motivation: string) => {
+    const today = new Date().toISOString().split("T")[0];
+    const updatedData = { ...formData, motivation, pledgeDate: today };
+    setFormData(updatedData);
+    localStorage.setItem("soberTimerData", JSON.stringify(updatedData));
+    setView("setup");
+  };
+
+  if (view === "pledge") {
+    return (
+      <PledgeView
+        onPledgeConfirmed={handlePledgeConfirmed}
+        onClose={() => {
+          // If user has existing data, allow them to skip pledge
+          if (formData.startDate && formData.addiction) {
+            setView("timer");
+          }
+        }}
+      />
+    );
+  }
 
   if (view === "community") {
     return (
