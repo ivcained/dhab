@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { ConnectEmbed } from "thirdweb/react";
-import { inAppWallet } from "thirdweb/wallets";
+import { ConnectEmbed, useActiveAccount } from "thirdweb/react";
+import { inAppWallet, type Wallet } from "thirdweb/wallets";
 import { client } from "~/lib/thirdweb";
 
 interface WalletLoginProps {
@@ -21,6 +21,7 @@ const wallets = [
 
 export default function WalletLogin({ onConnected, onSkip }: WalletLoginProps) {
   const [isConnected, setIsConnected] = useState(false);
+  const activeAccount = useActiveAccount();
 
   // Check for existing connection in localStorage
   useEffect(() => {
@@ -32,14 +33,26 @@ export default function WalletLogin({ onConnected, onSkip }: WalletLoginProps) {
     }
   }, [onConnected]);
 
-  const handleConnect = (wallet: {
-    getAccount: () => { address: string } | null;
-  }) => {
+  // Handle when activeAccount changes (user connects)
+  useEffect(() => {
+    if (activeAccount && !isConnected) {
+      const address = activeAccount.address;
+      const strategy = "thirdweb";
+
+      // Save to localStorage
+      localStorage.setItem("walletAddress", address);
+      localStorage.setItem("authStrategy", strategy);
+
+      setIsConnected(true);
+      onConnected(address, strategy);
+    }
+  }, [activeAccount, isConnected, onConnected]);
+
+  const handleConnect = (wallet: Wallet) => {
     const account = wallet.getAccount();
     if (account) {
       const address = account.address;
-      // Try to determine the strategy from the wallet type
-      const strategy = "thirdweb"; // Default strategy name
+      const strategy = "thirdweb";
 
       // Save to localStorage
       localStorage.setItem("walletAddress", address);
